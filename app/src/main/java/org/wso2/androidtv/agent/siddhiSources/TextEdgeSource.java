@@ -24,12 +24,6 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 
 import java.util.Map;
 
-@Extension(
-        name = "textEdge",
-        namespace="source",
-        description = "Get event streams from edge devices as text",
-        examples = @Example(description = "TBD",syntax = "TBD")
-)
 
 public class TextEdgeSource extends AbstractEdgeSource{
 

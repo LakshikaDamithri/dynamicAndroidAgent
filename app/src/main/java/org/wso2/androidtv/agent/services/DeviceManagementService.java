@@ -274,16 +274,15 @@ public class DeviceManagementService extends Service {
 
         siddhiServiceHandler = new SiddhiServiceHandler(this);
         Bundle extras = new Bundle();
-        String executionPlan = "@app:name('foo2')" +
-                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = \"true\",regex.T=’\"t\"\\:(\\w+)’,regex.H=’\"h\"\\:(\\w+)’,regex.A=’,\"a\"\\:(\\w+)’,regex.W=’\"w\"\\:(\\w+)’,regex.K=’\"k\"\\:(\\w+)’, regex.L=’\"l\"\\:(\\w+)’,@attributes(temperature = \"T\", humidity = \"H\", ac = \"A\", window = \"W\", keycard = \"K\",light = \"L\")))" +
+        String executionPlan = "@app:name('edgeAnalytics') " +
                 "define stream edgeDeviceEventStream " +
                 "(ac int, window int, light int, temperature float, humidity float, keycard int); " +
                 "@info(name = 'alertQuery') " +
                 "from edgeDeviceEventStream[(1 == ac or 1 == window or 1 == light) and 0 == keycard] " +
                 "select ac, window, light insert into alertOutputStream; " +
                 "@info(name = 'temperatureQuery') " +
-                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
-                "select te2.temperature insert into temperatureOutputStream; " +
+                "from edgeDeviceEventStream#window.time(10000) select avg(temperature) as avgTemp " +
+                "insert into temperatureOutputStream;"+
                 "@info(name = 'humidityQuery') " +
                 "from every he1=edgeDeviceEventStream, he2=edgeDeviceEventStream[he1.humidity != humidity ] " +
                 "select he2.humidity insert into humidityOutputStream; " +
@@ -403,8 +402,8 @@ public class DeviceManagementService extends Service {
         if (incomingMessage.endsWith("\r")) {
             message = incomingMessage;
             incomingMessage = "";
-            //processXBeeMessage(message.replace("\r", ""));
-            sourceEventListener.onEvent(message, null);
+            processXBeeMessage(message.replace("\r", ""));
+            //sourceEventListener.onEvent(message, null);
         }
     }
 
@@ -434,7 +433,7 @@ public class DeviceManagementService extends Service {
                     case "CO":
                         sendATResponse("Access card removed");
                         break;
-                    /*case "DATA":
+                    case "DATA":
                         JSONObject payload = incomingMsg.getJSONObject("p");
                         float temp = payload.getInt("t");
                         float humidity = payload.getInt("h");
@@ -443,13 +442,13 @@ public class DeviceManagementService extends Service {
                         int light = payload.getInt("l");
                         int keyCard = payload.getInt("k");
                         siddhiService.getInputHandler().send(new Object[]{ac, window, light, temp, humidity, keyCard});
-                        break;*/
+                        break;
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Incomplete incoming message. Ignored", e);
-            }/* catch (InterruptedException e) {
+            }catch (InterruptedException e) {
                 Log.e(TAG, e.getClass().getSimpleName(), e);
-            }*/
+            }
         }
     }
 
@@ -610,7 +609,7 @@ public class DeviceManagementService extends Service {
                     mService.get().displayAlert((Integer) data.getData(0) == 1, (Integer) data.getData(1) == 1, (Integer) data.getData(2) == 1);
                     break;
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_TEMPERATURE_QUERY:
-                    mService.get().publishStats(publishTopic + "/TEMP", "TEMP", (Float) data.getData(0));
+                    mService.get().publishStats(publishTopic + "/TEMP", "TEMP", new Float (data.getData(0).toString()));
                     break;
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_HUMIDITY_QUERY:
                     mService.get().publishStats(publishTopic + "/HUMIDITY", "HUMIDITY", (Float) data.getData(0));
