@@ -24,7 +24,7 @@ allprojects {
        }
         //mavenLocal();
         jcenter()
-       maven { url "https://jitpack.io" }
+        maven { url 'https://jitpack.io' }
         mavenCentral()
         maven { url 'http://maven.wso2.org/nexus/content/groups/wso2-public/' }
         maven { url 'http://maven.wso2.org/nexus/content/repositories/releases/' }

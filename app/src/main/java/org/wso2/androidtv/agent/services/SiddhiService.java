@@ -73,7 +73,7 @@ public class SiddhiService extends Service {
                 }
             }
         });
-        siddhiAppRuntime.addCallback("temperatureQuery", new QueryCallback() {
+      siddhiAppRuntime.addCallback("temperatureQuery", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 Log.d(TAG, "Event arrived on temperatureQuery");

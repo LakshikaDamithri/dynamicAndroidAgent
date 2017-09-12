@@ -268,21 +268,53 @@ public class DeviceManagementService extends Service {
         });
         androidTVMQTTHandler.connect();
 
+        String b ="" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='text',fail.on.missing.attribute='true'," +
+                "regex.A='(\\w+)\\s([-.0-9]+)',regex.B='volume=([-0-9]+)'," +
+                "@attributes(symbol = 'A[1]', price = 'A[2]', volume = 'B'))) " +
+                "define stream FooStream (symbol string, price float, volume long); " +
+                "define stream BarStream (symbol string, price float, volume long); ";
+
         usbServiceHandler = new UsbServiceHandler(this);
         // Start UsbService(if it was not started before) and Bind it
         startService(UsbService.class, usbConnection, null);
 
         siddhiServiceHandler = new SiddhiServiceHandler(this);
         Bundle extras = new Bundle();
-        String executionPlan = "@app:name('edgeAnalytics') " +
+       /* String executionPlan = "@app:name('edgeAnalytics') " +
+                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true',regex.T='\"t\"\\:(\\w+)',regex.H=’\"h\"\\:(\\w+)’,regex.A=’,\"a\"\\:(\\w+)’,regex.W=’\"w\"\\:(\\w+)’,regex.K=’\"k\"\\:(\\w+)’, regex.L=’\"l\"\\:(\\w+)’,@attributes(temperature = \"T\", humidity = \"H\", ac = \"A\", window = \"W\", keycard = \"K\",light = \"L\")))" +
                 "define stream edgeDeviceEventStream " +
                 "(ac int, window int, light int, temperature float, humidity float, keycard int); " +
                 "@info(name = 'alertQuery') " +
                 "from edgeDeviceEventStream[(1 == ac or 1 == window or 1 == light) and 0 == keycard] " +
                 "select ac, window, light insert into alertOutputStream; " +
                 "@info(name = 'temperatureQuery') " +
-                "from edgeDeviceEventStream#window.time(10000) select avg(temperature) as avgTemp " +
-                "insert into temperatureOutputStream;"+
+                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
+                "select te2.temperature insert into temperatureOutputStream; " +
+                "@info(name = 'humidityQuery') " +
+                "from every he1=edgeDeviceEventStream, he2=edgeDeviceEventStream[he1.humidity != humidity ] " +
+                "select he2.humidity insert into humidityOutputStream; " +
+                "@info(name = 'acQuery') " +
+                "from every ae1=edgeDeviceEventStream, ae2=edgeDeviceEventStream[ae1.ac != ac ] " +
+                "select ae2.ac insert into acOutputStream; " +
+                "@info(name = 'windowQuery') " +
+                "from every we1=edgeDeviceEventStream, we2=edgeDeviceEventStream[we1.window != window ] " +
+                "select we2.window insert into windowOutputStream; " +
+                "@info(name = 'keycardQuery') " +
+                "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
+                "select ke2.keycard insert into keycardOutputStream;";*/
+
+          String executionPlan = "@app:name('edgeAnalytics') " +
+                "@source(type='textEdge', @map(type='passThrough'))" +
+                "define stream edgeDeviceEventStream " +
+                "(ac int, window int, light int, temperature float, humidity float, keycard int); " +
+                "@info(name = 'alertQuery') " +
+                "from edgeDeviceEventStream[(1 == ac or 1 == window or 1 == light) and 0 == keycard] " +
+                "select ac, window, light insert into alertOutputStream; " +
+                "@info(name = 'temperatureQuery') " +
+                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
+                "select te2.temperature insert into temperatureOutputStream; " +
                 "@info(name = 'humidityQuery') " +
                 "from every he1=edgeDeviceEventStream, he2=edgeDeviceEventStream[he1.humidity != humidity ] " +
                 "select he2.humidity insert into humidityOutputStream; " +
@@ -402,8 +434,8 @@ public class DeviceManagementService extends Service {
         if (incomingMessage.endsWith("\r")) {
             message = incomingMessage;
             incomingMessage = "";
-            processXBeeMessage(message.replace("\r", ""));
-            //sourceEventListener.onEvent(message, null);
+           processXBeeMessage(message.replace("\r", ""));
+           //sourceEventListener.onEvent(message, null);
         }
     }
 
@@ -606,6 +638,7 @@ public class DeviceManagementService extends Service {
             Log.d(TAG, "Edge data received: " + data.toString());
             switch (msg.what) {
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_ALERT_QUERY:
+                    //mService.get().publishStats(publishTopic + "/ALERT", "operation", new Float ("1"));
                     mService.get().displayAlert((Integer) data.getData(0) == 1, (Integer) data.getData(1) == 1, (Integer) data.getData(2) == 1);
                     break;
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_TEMPERATURE_QUERY:
