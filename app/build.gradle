@@ -27,8 +27,8 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
-       merge 'META-INF/DEPENDENCIES'
-       // merge 'org/apache/log4j/lf5/config/defaultconfig.properties'
+        merge 'META-INF/DEPENDENCIES'
+        // merge 'org/apache/log4j/lf5/config/defaultconfig.properties'
         merge 'META-INF/annotations/org.wso2.siddhi.annotation.Extension'
     }
 
@@ -36,8 +36,8 @@ android {
 }
 
 antlr4 {
-    extraArgs=['-package', 'org.wso2.siddhi.query.compiler']
-    output=project.file("src/main/java/org/wso2/siddhi/query/compiler")
+    extraArgs = ['-package', 'org.wso2.siddhi.query.compiler']
+    output = project.file("src/main/java/org/wso2/siddhi/query/compiler")
 }
 
 dependencies {
@@ -52,51 +52,45 @@ dependencies {
 
 
 
-  implementation ('org.wso2.siddhi:siddhi-core:4.0.0-M61'){
-     //exclude group:'org.ow2.asm'
+    implementation('org.wso2.siddhi:siddhi-core:4.0.0-M71-SNAPSHOT') {
+        //exclude group:'org.ow2.asm'
 
-      //exclude module: 'log4j'
-        transitive =false;
+        //exclude module: 'log4j'
+        transitive = false;
 
 
     }
 
-    annotationProcessor ('org.wso2.siddhi:siddhi-annotations:4.0.0-M61'){
+    annotationProcessor('org.wso2.siddhi:siddhi-annotations:4.0.0-M71-SNAPSHOT') {
 
         //exclude module:'siddhi-core'
         transitive = false
 
 
     }
-    implementation('org.wso2.siddhi:siddhi-annotations:4.0.0-M61'){
-        transitive =false
+    implementation('org.wso2.siddhi:siddhi-annotations:4.0.0-M71-SNAPSHOT') {
+        transitive = false
     }
-    implementation ('org.wso2.siddhi:siddhi-query-api:4.0.0-M61'){
+    implementation('org.wso2.siddhi:siddhi-query-api:4.0.0-M71-SNAPSHOT') {
 
-        transitive =false
+        transitive = false
     }
-    implementation ('org.wso2.siddhi:siddhi-query-compiler:4.0.0-M61'){
+    implementation('org.wso2.siddhi:siddhi-query-compiler:4.0.0-M71-SNAPSHOT') {
         //exclude module : 'siddhi-query-api'
         transitive = false
     }
-    implementation ('org.wso2.siddhi:siddhi-extension-text-input-mapper:4.0.0-M15'){
+    implementation('org.wso2.siddhi:siddhi-extension-text-input-mapper:4.0.0-M15') {
         transitive = false
     }
 
+    /* configurations {
+         implementation.exclude module:'log4j'
 
-   /* configurations {
-        implementation.exclude module:'log4j'
-
-        api.exclude group : 'org.atteo.classindex'
-    }*/
+         api.exclude group : 'org.atteo.classindex'
+     }*/
     /*implementation 'org.wso2.siddhi:siddhi-query-api:4.0.0-M50'
     implementation 'org.wso2.siddhi:siddhi-query-compiler:4.0.0-M50'*/
-   // implementation 'org.wso2.siddhi:siddhi-extension-text-input-mapper:4.0.0-M15'
-
-
-
-
-
+    // implementation 'org.wso2.siddhi:siddhi-extension-text-input-mapper:4.0.0-M15'
 
 
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
@@ -106,7 +100,7 @@ dependencies {
     implementation 'com.netflix.feign:feign-jackson:8.16.0'
     implementation "com.google.guava:guava:19.0"
     implementation "com.google.code.gson:gson:2.8.0"
-   implementation ("org.apache.log4j.wso2:log4j:1.2.17.wso2v1"){
+    implementation("org.apache.log4j.wso2:log4j:1.2.17.wso2v1") {
         transitive = false
     }
 
@@ -114,17 +108,14 @@ dependencies {
     implementation "org.eclipse.osgi:org.eclipse.osgi.services:3.3.100.v20120522-1822"
     implementation 'com.android.support:multidex:1.0.0'
     implementation 'com.android.support:design:26.0.1'
-  /* implementation ("org.atteo.classindex:classindex:3.4"){
-            transitive =false
-    }*/
-    annotationProcessor ("org.atteo.classindex:classindex:3.4"){
-           // transitive = false;
+    /* implementation ("org.atteo.classindex:classindex:3.4"){
+              transitive =false
+      }*/
+    annotationProcessor("org.atteo.classindex:classindex:3.4") {
+        // transitive = false;
     }
     implementation "org.wso2.orbit.com.lmax:disruptor:3.3.2.wso2v2"
     implementation "org.antlr:antlr4-runtime:4.5.1"
-
-
-
 
     /*implementation "org.mvel:mvel2:2.2.1.Final"
     implementation "io.dropwizard.metrics:metrics-core:3.1.0"
@@ -143,53 +134,50 @@ dependencies {
     implementation "org.apache.commons:commons-io:1.3.2"
     implementation "org.yaml:snakeyaml:1.18"*/
 
+    /*  implementation ('com.github.Gathika94.siddhi:siddhi-core:v4.0.0-M60'){
+          exclude group:'com.github.Gathika94.siddhi'
+          exclude group:'org.apache.log4j.wso2'
+          exclude group:'org.slf4j'
+          exclude group:'org.wso2.orbit.com.lmax'
+          exclude group:'com.google.guava'
+          exclude group:'org.quartz-scheduler.wso2'
+          exclude group:'io.dropwizard.metrics'
+          exclude group:'com.google.code.gson'
+          exclude group: 'com.jayway.jsonpath'
+          exclude group:'org.eclipse.osgi'
+          exclude group:'org.osgi'
+
+
+      }
+
+
+      annotationProcessor ('com.github.Gathika94.siddhi:siddhi-annotations:v4.0.0-M60'){
+          transitive == false;
+      }
+
+      implementation ('com.github.Gathika94.siddhi:siddhi-annotations:v4.0.0-M60'){
+          //transitive == false;
+          exclude group:'org.atteo.classindex'
+      }
+
+      implementation ('com.github.Gathika94.siddhi:siddhi-query-api:v4.0.0-M60'){
+          //transitive == false;
+          exclude group:'org.apache.log4j.wso2'
+      }
 
 
 
-  /*  implementation ('com.github.Gathika94.siddhi:siddhi-core:v4.0.0-M60'){
-        exclude group:'com.github.Gathika94.siddhi'
-        exclude group:'org.apache.log4j.wso2'
-        exclude group:'org.slf4j'
-        exclude group:'org.wso2.orbit.com.lmax'
-        exclude group:'com.google.guava'
-        exclude group:'org.quartz-scheduler.wso2'
-        exclude group:'io.dropwizard.metrics'
-        exclude group:'com.google.code.gson'
-        exclude group: 'com.jayway.jsonpath'
-        exclude group:'org.eclipse.osgi'
-        exclude group:'org.osgi'
+      implementation ('com.github.Gathika94.siddhi:siddhi-query-compiler:v4.0.0-M60'){
+          //transitive == false;
+          exclude group:'com.github.Gathika94.siddhi'
+          exclude group:'org.apache.log4j.wso2'
+          exclude group:'org.mvel'
+          exclude group:'org.antlr'
+      }
 
-
-    }
-
-
-    annotationProcessor ('com.github.Gathika94.siddhi:siddhi-annotations:v4.0.0-M60'){
-        transitive == false;
-    }
-
-    implementation ('com.github.Gathika94.siddhi:siddhi-annotations:v4.0.0-M60'){
-        //transitive == false;
-        exclude group:'org.atteo.classindex'
-    }
-
-    implementation ('com.github.Gathika94.siddhi:siddhi-query-api:v4.0.0-M60'){
-        //transitive == false;
-        exclude group:'org.apache.log4j.wso2'
-    }
-
-
-
-    implementation ('com.github.Gathika94.siddhi:siddhi-query-compiler:v4.0.0-M60'){
-        //transitive == false;
-        exclude group:'com.github.Gathika94.siddhi'
-        exclude group:'org.apache.log4j.wso2'
-        exclude group:'org.mvel'
-        exclude group:'org.antlr'
-    }
-
-    implementation ('org.wso2.siddhi:siddhi-extension-text-input-mapper:4.0.0-M15'){
-        transitive = false
-    }*/
+      implementation ('org.wso2.siddhi:siddhi-extension-text-input-mapper:4.0.0-M15'){
+          transitive = false
+      }*/
     //implementation 'com.android.support:multidex:1.0.0'
 
 }

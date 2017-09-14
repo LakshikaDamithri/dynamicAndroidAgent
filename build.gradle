@@ -7,7 +7,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0-beta2'
+        classpath 'com.android.tools.build:gradle:3.0.0-beta5'
         classpath 'me.champeau.gradle:antlr4-gradle-plugin:0.1'
         
 
@@ -28,7 +28,8 @@ allprojects {
         mavenCentral()
         maven { url 'http://maven.wso2.org/nexus/content/groups/wso2-public/' }
         maven { url 'http://maven.wso2.org/nexus/content/repositories/releases/' }
-        maven { url 'http://maven.wso2.org/nexus/content/repositories/snapshots/' }
+       // maven { url 'http://maven.wso2.org/nexus/content/repositories/snapshots/' }
+        mavenLocal()
         maven { url 'https://repo1.maven.org/maven2/' }
         maven { url 'https://oss.sonatype.org/content/repositories/releases/'}
         maven { url 'http://myrepo.net/repo'}

@@ -282,7 +282,7 @@ public class DeviceManagementService extends Service {
 
         siddhiServiceHandler = new SiddhiServiceHandler(this);
         Bundle extras = new Bundle();
-       /* String executionPlan = "@app:name('edgeAnalytics') " +
+        /*String executionPlan = "@app:name('edgeAnalytics') " +
                 "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true',regex.T='\"t\"\\:(\\w+)',regex.H=’\"h\"\\:(\\w+)’,regex.A=’,\"a\"\\:(\\w+)’,regex.W=’\"w\"\\:(\\w+)’,regex.K=’\"k\"\\:(\\w+)’, regex.L=’\"l\"\\:(\\w+)’,@attributes(temperature = \"T\", humidity = \"H\", ac = \"A\", window = \"W\", keycard = \"K\",light = \"L\")))" +
                 "define stream edgeDeviceEventStream " +
                 "(ac int, window int, light int, temperature float, humidity float, keycard int); " +
@@ -306,7 +306,7 @@ public class DeviceManagementService extends Service {
                 "select ke2.keycard insert into keycardOutputStream;";*/
 
           String executionPlan = "@app:name('edgeAnalytics') " +
-                "@source(type='textEdge', @map(type='passThrough'))" +
+                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true' , regex.temperature='\"t\"\\:(\\w+)'))" +
                 "define stream edgeDeviceEventStream " +
                 "(ac int, window int, light int, temperature float, humidity float, keycard int); " +
                 "@info(name = 'alertQuery') " +
@@ -434,8 +434,8 @@ public class DeviceManagementService extends Service {
         if (incomingMessage.endsWith("\r")) {
             message = incomingMessage;
             incomingMessage = "";
-           processXBeeMessage(message.replace("\r", ""));
-           //sourceEventListener.onEvent(message, null);
+            processXBeeMessage(message.replace("\r", ""));
+
         }
     }
 
@@ -466,6 +466,7 @@ public class DeviceManagementService extends Service {
                         sendATResponse("Access card removed");
                         break;
                     case "DATA":
+
                         JSONObject payload = incomingMsg.getJSONObject("p");
                         float temp = payload.getInt("t");
                         float humidity = payload.getInt("h");
@@ -473,14 +474,15 @@ public class DeviceManagementService extends Service {
                         int window = payload.getInt("w");
                         int light = payload.getInt("l");
                         int keyCard = payload.getInt("k");
-                        siddhiService.getInputHandler().send(new Object[]{ac, window, light, temp, humidity, keyCard});
+                        //siddhiService.getInputHandler().send(new Object[]{ac, window, light, temp, humidity, keyCard});
+                        sourceEventListener.onEvent(new Object[]{ac, window, light, temp, humidity, keyCard}, null);
                         break;
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Incomplete incoming message. Ignored", e);
-            }catch (InterruptedException e) {
+            }/*catch (InterruptedException e) {
                 Log.e(TAG, e.getClass().getSimpleName(), e);
-            }
+            }*/
         }
     }
 
