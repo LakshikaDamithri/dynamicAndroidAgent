@@ -79,7 +79,7 @@ dependencies {
         //exclude module : 'siddhi-query-api'
         transitive = false
     }
-    implementation('org.wso2.siddhi:siddhi-extension-text-input-mapper:4.0.0-M15') {
+    implementation('org.wso2.extension.siddhi.map.text:siddhi-map-text:1.0.2') {
         transitive = false
     }
 

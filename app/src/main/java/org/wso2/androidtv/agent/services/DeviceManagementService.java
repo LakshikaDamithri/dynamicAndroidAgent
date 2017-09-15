@@ -268,13 +268,6 @@ public class DeviceManagementService extends Service {
         });
         androidTVMQTTHandler.connect();
 
-        String b ="" +
-                "@App:name('TestSiddhiApp')" +
-                "@source(type='inMemory', topic='stock', @map(type='text',fail.on.missing.attribute='true'," +
-                "regex.A='(\\w+)\\s([-.0-9]+)',regex.B='volume=([-0-9]+)'," +
-                "@attributes(symbol = 'A[1]', price = 'A[2]', volume = 'B'))) " +
-                "define stream FooStream (symbol string, price float, volume long); " +
-                "define stream BarStream (symbol string, price float, volume long); ";
 
         usbServiceHandler = new UsbServiceHandler(this);
         // Start UsbService(if it was not started before) and Bind it
@@ -305,8 +298,9 @@ public class DeviceManagementService extends Service {
                 "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
                 "select ke2.keycard insert into keycardOutputStream;";*/
 
-          String executionPlan = "@app:name('edgeAnalytics') " +
-                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true' , regex.temperature='\"t\"\\:(\\w+)'))" +
+        String executionPlan = "@app:name('edgeAnalytics') " +
+                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true' , regex" +
+                ".T=\"\"\"\"t\":(\\w+)\"\"\", regex"+".H=\"\"\"\"h\":(\\w+)\"\"\", regex"+".A=\"\"\"\"a\":(\\w+)\"\"\", regex"+".W=\"\"\"\"w\":(\\w+)\"\"\", regex"+".K=\"\"\"\"k\":(\\w+)\"\"\", regex"+".L=\"\"\"\"l\":(\\w+)\"\"\", @attributes(temperature = 'T', humidity = 'H', ac = 'A', window = 'W', keycard = 'K', light = 'L')))"+
                 "define stream edgeDeviceEventStream " +
                 "(ac int, window int, light int, temperature float, humidity float, keycard int); " +
                 "@info(name = 'alertQuery') " +
@@ -467,15 +461,15 @@ public class DeviceManagementService extends Service {
                         break;
                     case "DATA":
 
-                        JSONObject payload = incomingMsg.getJSONObject("p");
+                        /*JSONObject payload = incomingMsg.getJSONObject("p");
                         float temp = payload.getInt("t");
                         float humidity = payload.getInt("h");
                         int ac = payload.getInt("a");
                         int window = payload.getInt("w");
                         int light = payload.getInt("l");
-                        int keyCard = payload.getInt("k");
+                        int keyCard = payload.getInt("k");*/
                         //siddhiService.getInputHandler().send(new Object[]{ac, window, light, temp, humidity, keyCard});
-                        sourceEventListener.onEvent(new Object[]{ac, window, light, temp, humidity, keyCard}, null);
+                        sourceEventListener.onEvent(message, null);
                         break;
                 }
             } catch (JSONException e) {
@@ -544,7 +538,7 @@ public class DeviceManagementService extends Service {
         }
     }
 
-    public void displayAlert(boolean ac, boolean window, boolean light){
+    public void displayAlert(boolean ac, boolean window, boolean light) {
         String alertMsg = "Please ";
         if (window) {
             alertMsg += "close the window ";
@@ -626,11 +620,11 @@ public class DeviceManagementService extends Service {
     // This handler will be passed to SiddhiService. Data received from SiddhiQuery is displayed through this handler
     private static class SiddhiServiceHandler extends Handler {
         private final WeakReference<DeviceManagementService> mService;
-        private static  String publishTopic;
+        private static String publishTopic;
 
         SiddhiServiceHandler(DeviceManagementService service) {
             mService = new WeakReference<>(service);
-            publishTopic = LocalRegistry.getTenantDomain(mService.get())+ "/" + TVConstants.DEVICE_TYPE + "/" +
+            publishTopic = LocalRegistry.getTenantDomain(mService.get()) + "/" + TVConstants.DEVICE_TYPE + "/" +
                     LocalRegistry.getDeviceId(mService.get());
         }
 
@@ -644,7 +638,7 @@ public class DeviceManagementService extends Service {
                     mService.get().displayAlert((Integer) data.getData(0) == 1, (Integer) data.getData(1) == 1, (Integer) data.getData(2) == 1);
                     break;
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_TEMPERATURE_QUERY:
-                    mService.get().publishStats(publishTopic + "/TEMP", "TEMP", new Float (data.getData(0).toString()));
+                    mService.get().publishStats(publishTopic + "/TEMP", "TEMP", new Float(data.getData(0).toString()));
                     break;
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_HUMIDITY_QUERY:
                     mService.get().publishStats(publishTopic + "/HUMIDITY", "HUMIDITY", (Float) data.getData(0));
@@ -687,7 +681,7 @@ public class DeviceManagementService extends Service {
                             }
                         } else {
                             Log.d("CacheManagerService", "Unable to connect to the MQTT server, " +
-                                    "hence retry in " + (threadWaitingTime )/1000 + " seconds");
+                                    "hence retry in " + (threadWaitingTime) / 1000 + " seconds");
                         }
                     }
                     try {
@@ -709,7 +703,7 @@ public class DeviceManagementService extends Service {
                 Log.d("PublishCacheData", "Publishing cache entry: " + entry.getId());
                 androidTVMQTTHandler.publishDeviceData(entry.getMessage(), entry.getTopic());
                 cacheManagementService.removeCacheEntry(entry.getId());
-            }else {
+            } else {
                 break;
             }
         }
@@ -721,16 +715,13 @@ public class DeviceManagementService extends Service {
     }
 
 
-    public static void connectToSource(SourceEventListener srcEvntListner){
+    public static void connectToSource(SourceEventListener srcEvntListner) {
         sourceEventListener = srcEvntListner;
     }
 
-    public static void disConnectToSource(){
-        sourceEventListener = null ;
+    public static void disConnectToSource() {
+        sourceEventListener = null;
     }
-
-
-
 
 
 }
