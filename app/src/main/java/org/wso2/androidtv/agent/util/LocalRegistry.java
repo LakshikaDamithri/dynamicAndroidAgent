@@ -175,6 +175,14 @@ public class LocalRegistry {
         return LocalRegistry.accessToken;
     }
 
+    public static synchronized String getAccessTokenSidhhi(){
+        String token ="";
+        if(LocalRegistry.accessToken != null){
+            token = LocalRegistry.accessToken;
+        }
+        return token;
+    }
+
     public static synchronized void addRefreshToken(Context context, String refreshToken) {
         SharedPreferences sharedpreferences = context.getSharedPreferences(SENSE_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -273,6 +281,14 @@ public class LocalRegistry {
             LocalRegistry.mqttEndpoint = sharedpreferences.getString(MQTT_ENDPOINT_KEY, "");
         }
         return LocalRegistry.mqttEndpoint;
+    }
+
+    public static String getMqttEndpointSiddhi(){
+        String url= null;
+        if(LocalRegistry.mqttEndpoint!=null){
+            url=LocalRegistry.mqttEndpoint;
+        }
+        return  url;
     }
 
     public static void setEnrolled(Context context, boolean enrolled) {

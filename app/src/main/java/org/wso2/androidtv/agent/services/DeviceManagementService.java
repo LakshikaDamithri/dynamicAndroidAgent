@@ -188,6 +188,7 @@ public class DeviceManagementService extends Service {
         }
     };
 
+
     private void installConfigurations(final String fileName) {
         Runnable installConfigThread = new Runnable() {
             @Override
@@ -260,13 +261,13 @@ public class DeviceManagementService extends Service {
 
     @Override
     public void onCreate() {
-        androidTVMQTTHandler = new AndroidTVMQTTHandler(this, new MessageReceivedCallback() {
+       androidTVMQTTHandler = new AndroidTVMQTTHandler(this, new MessageReceivedCallback() {
             @Override
             public void onMessageReceived(JSONObject message) throws JSONException {
                 performAction(message.getString("action"), message.getString("payload"));
             }
         });
-        androidTVMQTTHandler.connect();
+       androidTVMQTTHandler.connect();
 
 
         usbServiceHandler = new UsbServiceHandler(this);
@@ -298,7 +299,7 @@ public class DeviceManagementService extends Service {
                 "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
                 "select ke2.keycard insert into keycardOutputStream;";*/
 
-        String executionPlan = "@app:name('edgeAnalytics') " +
+       /* String executionPlan = "@app:name('edgeAnalytics') " +
                 "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true' , regex" +
                 ".T=\"\"\"\"t\":(\\w+)\"\"\", regex"+".H=\"\"\"\"h\":(\\w+)\"\"\", regex"+".A=\"\"\"\"a\":(\\w+)\"\"\", regex"+".W=\"\"\"\"w\":(\\w+)\"\"\", regex"+".K=\"\"\"\"k\":(\\w+)\"\"\", regex"+".L=\"\"\"\"l\":(\\w+)\"\"\", @attributes(temperature = 'T', humidity = 'H', ac = 'A', window = 'W', keycard = 'K', light = 'L')))"+
                 "define stream edgeDeviceEventStream " +
@@ -320,7 +321,98 @@ public class DeviceManagementService extends Service {
                 "select we2.window insert into windowOutputStream; " +
                 "@info(name = 'keycardQuery') " +
                 "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
-                "select ke2.keycard insert into keycardOutputStream;";
+                "select ke2.keycard insert into keycardOutputStream;";*/
+        System.out.println("brokerUrl "+LocalRegistry.getMqttEndpointSiddhi());
+        System.out.println("usernameToken "+LocalRegistry.getAccessTokenSidhhi());
+        WeakReference<DeviceManagementService> mService;
+
+        String executionPlan = "@app:name('edgeAnalytics') " +
+                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true' , regex" +
+                ".T=\"\"\"\"t\":(\\w+)\"\"\", regex"+".H=\"\"\"\"h\":(\\w+)\"\"\", regex"+".A=\"\"\"\"a\":(\\w+)\"\"\", regex"+".W=\"\"\"\"w\":(\\w+)\"\"\", regex"+".K=\"\"\"\"k\":(\\w+)\"\"\", regex"+".L=\"\"\"\"l\":(\\w+)\"\"\", @attributes(temperature = 'T', humidity = 'H', ac = 'A', window = 'W', keycard = 'K', light = 'L')))"+
+                "define stream edgeDeviceEventStream " +
+                "(ac float, window float, light float, temperature float, humidity float, keycard float); " +
+
+
+               /* "@sink(type='mqtt', url="+ "'"+LocalRegistry.getMqttEndpointSiddhi()+"'"+"," +
+                "topic="+"'carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/AC',username="+"'"+LocalRegistry.getAccessTokenSidhhi()+"'"+"," +
+                "password="+"\""+"\""+", clean.session='true', message.retain='true', " +
+                "quality.of.service= '2', keep.alive= '3600',connection.timeout = '5000'," +
+                "@map(type='json'))" +
+                " define stream acOutputStream (ac int);" +*/
+
+                /*"@sink(type='mqtt', url="+ "'"+LocalRegistry.getMqttEndpointSiddhi()+"'"+"," +
+                "topic="+"'carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/TEMP',username="+"'"+LocalRegistry.getAccessTokenSidhhi()+"'"+"," +
+                "clean.session='false', message.retain='false', " +
+                "quality.of.service= '2', keep.alive= '3600'," +
+                "@map(type='json'))"+
+                " define stream temperatureOutputStream (temperature float);" +*/
+                "@config(async = 'true') define stream acOutputStream (name String, value float);"+
+
+                //"@info(name = 'acQuery') " +
+                "from every ae1=edgeDeviceEventStream, ae2=edgeDeviceEventStream[ae1.ac != ac ] " +
+                "select 'acStream' as name, ae2.ac as value insert into acOutputStream; "+
+                "from every we1=edgeDeviceEventStream, we2=edgeDeviceEventStream[we1.window != window ] " +
+                "select 'windowStream' as name, we2.window as value insert into acOutputStream; "+
+                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
+                "select 'tempStream' as name, te2.temperature as value insert into acOutputStream; "+
+                "from every he1=edgeDeviceEventStream, he2=edgeDeviceEventStream[he1.humidity != humidity ] " +
+                "select 'humidityStream' as name, he2.humidity as value insert into acOutputStream; " +
+                "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
+                "select 'keyCardStream' as name, ke2.keycard as value insert into acOutputStream;"+
+
+                "@info(name = 'alertQuery') " +
+                "from edgeDeviceEventStream[(1 == ac or 1 == window or 1 == light) and 0 == keycard] " +
+                "select ac, window, light insert into alertOutputStream; ";
+
+
+                /*  "@info(name = 'temperatureQuery') " +
+                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
+                "select te2.temperature insert into temperatureOutputStream; "+*/
+                /* +
+                "@info(name = 'temperatureQuery') " +
+                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
+                "select te2.temperature insert into temperatureOutputStream; " +
+                "@info(name = 'humidityQuery') " +
+                "from every he1=edgeDeviceEventStream, he2=edgeDeviceEventStream[he1.humidity != humidity ] " +
+                "select he2.humidity insert into humidityOutputStream; " +
+                "@info(name = 'windowQuery') " +
+                "from every we1=edgeDeviceEventStream, we2=edgeDeviceEventStream[we1.window != window ] " +
+                "select we2.window insert into windowOutputStream; " +
+                "@info(name = 'keycardQuery') " +
+                "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
+                "select ke2.keycard insert into keycardOutputStream;";*/
+
+        /*String executionPlan = "@app:name('edgeAnalytics') " +
+                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true' , regex" +
+                ".T=\"\"\"\"t\":(\\w+)\"\"\", regex"+".H=\"\"\"\"h\":(\\w+)\"\"\", regex"+".A=\"\"\"\"a\":(\\w+)\"\"\", regex"+".W=\"\"\"\"w\":(\\w+)\"\"\", regex"+".K=\"\"\"\"k\":(\\w+)\"\"\", regex"+".L=\"\"\"\"l\":(\\w+)\"\"\", @attributes(temperature = 'T', humidity = 'H', ac = 'A', window = 'W', keycard = 'K', light = 'L')))"+
+                "define stream edgeDeviceEventStream " +
+                "(ac int, window int, light int, temperature float, humidity float, keycard int); " +
+
+
+                "@sink(type='mqtt', url="+ "'"+LocalRegistry.getMqttEndpointSiddhi()+"'"+"," +
+                "topic="+"'carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/AC',username="+"'admin'"+"," +"password='admin',"+
+                "clean.session='true', message.retain='false', " +
+                "quality.of.service= '0', keep.alive= '600000'," +
+                "@map(type='json'))" +
+                " define stream acOutputStream (ac int);" +
+                "@info(name = 'acQuery') " +
+                "from every ae1=edgeDeviceEventStream, ae2=edgeDeviceEventStream[ae1.ac != ac ] " +
+                "select ae2.ac insert into acOutputStream; "+
+                "@info(name = 'alertQuery') " +
+                "from edgeDeviceEventStream[(1 == ac or 1 == window or 1 == light) and 0 == keycard] " +
+                "select ac, window, light insert into alertOutputStream; " +
+                "@info(name = 'temperatureQuery') " +
+                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
+                "select te2.temperature insert into temperatureOutputStream; " +
+                "@info(name = 'humidityQuery') " +
+                "from every he1=edgeDeviceEventStream, he2=edgeDeviceEventStream[he1.humidity != humidity ] " +
+                "select he2.humidity insert into humidityOutputStream; " +
+                "@info(name = 'windowQuery') " +
+                "from every we1=edgeDeviceEventStream, we2=edgeDeviceEventStream[we1.window != window ] " +
+                "select we2.window insert into windowOutputStream; " +
+                "@info(name = 'keycardQuery') " +
+                "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
+                "select ke2.keycard insert into keycardOutputStream;";*/
         extras.putString(TVConstants.EXECUTION_PLAN_EXTRA, executionPlan);
         startService(SiddhiService.class, siddhiConnection, extras);
 
@@ -469,6 +561,7 @@ public class DeviceManagementService extends Service {
                         int light = payload.getInt("l");
                         int keyCard = payload.getInt("k");*/
                         //siddhiService.getInputHandler().send(new Object[]{ac, window, light, temp, humidity, keyCard});
+
                         sourceEventListener.onEvent(message, null);
                         break;
                 }
@@ -510,7 +603,7 @@ public class DeviceManagementService extends Service {
         }
     }
 
-    private void publishStats(String topic, String key, float value) {
+    private void publishStats(String topic,String streamNameKey, String streamNameValue, String key, float value) {
         try {
             JSONObject jsonEvent = new JSONObject();
             JSONObject jsonMetaData = new JSONObject();
@@ -521,6 +614,7 @@ public class DeviceManagementService extends Service {
             jsonEvent.put("metaData", jsonMetaData);
 
             JSONObject payload = new JSONObject();
+            payload.put(streamNameKey,streamNameValue);
             payload.put(key, value);
             jsonEvent.put("payloadData", payload);
 
@@ -635,23 +729,24 @@ public class DeviceManagementService extends Service {
             switch (msg.what) {
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_ALERT_QUERY:
                     //mService.get().publishStats(publishTopic + "/ALERT", "operation", new Float ("1"));
-                    mService.get().displayAlert((Integer) data.getData(0) == 1, (Integer) data.getData(1) == 1, (Integer) data.getData(2) == 1);
+                    mService.get().displayAlert((Float) data.getData(0) == 1, (Float) data.getData(1) == 1, (Float) data.getData(2) == 1);
                     break;
-                case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_TEMPERATURE_QUERY:
+                /*case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_TEMPERATURE_QUERY:
                     mService.get().publishStats(publishTopic + "/TEMP", "TEMP", new Float(data.getData(0).toString()));
                     break;
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_HUMIDITY_QUERY:
+                    System.out.println("publishTopic : "+publishTopic);
                     mService.get().publishStats(publishTopic + "/HUMIDITY", "HUMIDITY", (Float) data.getData(0));
-                    break;
+                    break;*/
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_AC_QUERY:
-                    mService.get().publishStats(publishTopic + "/AC", "AC", (Integer) data.getData(0));
+                    mService.get().publishStats(publishTopic + "/edgeData", "streamName", (String) data.getData(0),"streamValue",new Float(data.getData(1).toString()));
                     break;
-                case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_WINDOW_QUERY:
+              /*  case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_WINDOW_QUERY:
                     mService.get().publishStats(publishTopic + "/WINDOW", "WINDOW", (Integer) data.getData(0));
                     break;
                 case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_KEYCARD_QUERY:
                     mService.get().publishStats(publishTopic + "/DOOR", "DOOR", (Integer) data.getData(0));
-                    break;
+                    break;*/
             }
         }
     }

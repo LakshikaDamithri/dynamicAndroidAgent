@@ -14,6 +14,7 @@ import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
+import org.wso2.siddhi.core.stream.output.StreamCallback;
 //import org.wso2.extension.siddhi.map.text.sourcemapper.TextSourceMapper;
 //import org.wso2.siddhi.extension.input.mapper.text.TextSourceMapper;
 
@@ -62,7 +63,7 @@ public class SiddhiService extends Service {
         }
         siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(executionPlan);
         siddhiAppRuntime.start();
-        siddhiAppRuntime.addCallback("alertQuery", new QueryCallback() {
+       siddhiAppRuntime.addCallback("alertQuery", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 Log.d(TAG, "Event arrived on alertQuery");
@@ -73,7 +74,7 @@ public class SiddhiService extends Service {
                 }
             }
         });
-      siddhiAppRuntime.addCallback("temperatureQuery", new QueryCallback() {
+    /*  siddhiAppRuntime.addCallback("temperatureQuery", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 Log.d(TAG, "Event arrived on temperatureQuery");
@@ -94,19 +95,24 @@ public class SiddhiService extends Service {
                     }
                 }
             }
-        });
-        siddhiAppRuntime.addCallback("acQuery", new QueryCallback() {
+        });*/
+        siddhiAppRuntime.addCallback("acOutputStream", new StreamCallback(){
             @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+            public void receive(Event[] events) {
                 Log.d(TAG, "Event arrived on acQuery");
                 if (mHandler != null) {
-                    for (Event e : inEvents) {
+                    for (Event e : events) {
                         mHandler.obtainMessage(MESSAGE_FROM_SIDDHI_SERVICE_AC_QUERY, e).sendToTarget();
                     }
                 }
             }
+
+            /*@Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+
+            }*/
         });
-        siddhiAppRuntime.addCallback("windowQuery", new QueryCallback() {
+     /*   siddhiAppRuntime.addCallback("windowQuery", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 Log.d(TAG, "Event arrived on windowQuery");
@@ -127,10 +133,10 @@ public class SiddhiService extends Service {
                     }
                 }
             }
-        });
+        });*/
 
         //Retrieving InputHandler to push events into Siddhi
-        setInputHandler(siddhiAppRuntime.getInputHandler("edgeDeviceEventStream"));
+        //setInputHandler(siddhiAppRuntime.getInputHandler("edgeDeviceEventStream"));
         Log.i(TAG, "Starting execution plan.");
     }
 
