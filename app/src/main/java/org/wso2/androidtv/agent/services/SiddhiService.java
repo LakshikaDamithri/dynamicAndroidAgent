@@ -74,7 +74,7 @@ public class SiddhiService extends Service {
                 }
             }
         });
-    /*  siddhiAppRuntime.addCallback("temperatureQuery", new QueryCallback() {
+   /*     siddhiAppRuntime.addCallback("temperatureQuery", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 Log.d(TAG, "Event arrived on temperatureQuery");
@@ -95,10 +95,10 @@ public class SiddhiService extends Service {
                     }
                 }
             }
-        });*/
-        siddhiAppRuntime.addCallback("acOutputStream", new StreamCallback(){
+        });
+       siddhiAppRuntime.addCallback("acQuery", new QueryCallback(){
             @Override
-            public void receive(Event[] events) {
+            public void receive(long l, Event[] events, Event[] events1) {
                 Log.d(TAG, "Event arrived on acQuery");
                 if (mHandler != null) {
                     for (Event e : events) {
@@ -107,12 +107,9 @@ public class SiddhiService extends Service {
                 }
             }
 
-            /*@Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
 
-            }*/
         });
-     /*   siddhiAppRuntime.addCallback("windowQuery", new QueryCallback() {
+        siddhiAppRuntime.addCallback("windowQuery", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 Log.d(TAG, "Event arrived on windowQuery");

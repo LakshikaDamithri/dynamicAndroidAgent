@@ -69,6 +69,7 @@ public class AndroidTVMQTTHandler extends MQTTTransportHandler {
      */
     @Override
     public void connect() {
+
         Runnable connector = new Runnable() {
             public void run() {
                 AndroidTVClient client = new AndroidTVClient(context);

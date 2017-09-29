@@ -91,6 +91,14 @@ public class LocalRegistry {
         return LocalRegistry.username;
     }
 
+    public static String getOwnerNameSiddhi(){
+        String ownername = "";
+        if(LocalRegistry.username!=null){
+            ownername=LocalRegistry.username;
+        }
+        return ownername;
+    }
+
     public static void removeUsername(Context context) {
         SharedPreferences sharedpreferences = context.getSharedPreferences(SENSE_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -106,6 +114,14 @@ public class LocalRegistry {
         editor.putString(DEVICE_ID_KEY, deviceId);
         editor.apply();
         LocalRegistry.deviceId = deviceId;
+    }
+
+    public static String getDeviceIDSiddhi(){
+        String deviceId="";
+        if(LocalRegistry.deviceId!=null){
+            deviceId=LocalRegistry.deviceId;
+        }
+        return deviceId;
     }
 
     public static void removeDeviceId(Context context) {
