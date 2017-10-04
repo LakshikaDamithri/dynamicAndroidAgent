@@ -89,6 +89,9 @@ dependencies {
        transitive = false
       // exclude group:'org.wso2.siddhi'
     }
+    implementation('org.wso2.extension.siddhi.store.rdbms:siddhi-store-rdbms:4.0.0-M8'){
+        transitive = false
+    }
     /* configurations {
          implementation.exclude module:'log4j'
 
@@ -118,6 +121,27 @@ dependencies {
     annotationProcessor("org.atteo.classindex:classindex:3.4") {}
     implementation "org.wso2.orbit.com.lmax:disruptor:3.3.2.wso2v2"
     implementation "org.antlr:antlr4-runtime:4.5.1"
+    implementation "com.h2database:h2:1.4.196"
+
+
+    implementation ("org.wso2.carbon.datasources:org.wso2.carbon.datasource.core:1.1.2"){
+        transitive=false
+    }
+    annotationProcessor ("org.wso2.carbon.datasources:org.wso2.carbon.datasource.core:1.1.2"){
+
+        transitive = false
+    }
+
+    implementation ("com.zaxxer:HikariCP-java7:2.4.11"){
+       transitive = false;
+    }
+
+    implementation ("org.slf4j:slf4j-api:1.7.21"){
+       transitive= false;
+    }
+
+    implementation 'javax.xml.bind:jaxb-api:2.2.3'
+
     //implementation "com.jayway.jsonpath:json-path:2.2.0"
 
 

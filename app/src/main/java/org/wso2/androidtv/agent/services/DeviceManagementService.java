@@ -46,6 +46,7 @@ import org.wso2.androidtv.agent.MessageActivity;
 import org.wso2.androidtv.agent.R;
 import org.wso2.androidtv.agent.VideoActivity;
 import org.wso2.androidtv.agent.constants.TVConstants;
+import org.wso2.androidtv.agent.h2cache.H2Connection;
 import org.wso2.androidtv.agent.mqtt.AndroidTVMQTTHandler;
 import org.wso2.androidtv.agent.mqtt.MessageReceivedCallback;
 import org.wso2.androidtv.agent.cache.CacheEntry;
@@ -61,6 +62,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.URLDecoder;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
@@ -269,6 +271,15 @@ public class DeviceManagementService extends Service {
         });
        androidTVMQTTHandler.connect();
 
+       H2Connection h2Connection = new H2Connection(this);
+        try {
+            h2Connection.initializeConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
 
         usbServiceHandler = new UsbServiceHandler(this);
         // Start UsbService(if it was not started before) and Bind it
@@ -365,12 +376,30 @@ public class DeviceManagementService extends Service {
                 //"@config(async = 'true') define stream acOutputStream (name String, value float);"+
                 "@sink(type='edgeGateway',topic='carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/AC',@map(type='json'))"+"define stream acOutputStream (AC Float);"+
                 "@sink(type='edgeGateway',topic='carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/HUMIDITY',@map(type='json'))"+"define stream humidityOutputStream (HUMIDITY Float);"+
+                "@sink(type='edgeGateway',topic='carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/TEMP',@map(type='json'))"+"define stream temperatureOutputStream (TEMP Float);"+
+                "@sink(type='edgeGateway',topic='carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/WINDOW',@map(type='json'))"+"define stream windowOutputStream (WINDOW Float);"+
+
+                "@config(async = 'true') define stream alertStream (alertMessage String);"+
+
+                "@Store(type='rdbms', jdbc.url='jdbc:h2:/data/data/agent.androidtv.wso2.org.agent2/data/edgeTVGateway;FILE_LOCK=FS;PAGE_SIZE=1024;CACHE_SIZE=8192', username='admin', password='admin' , jdbc.driver.name='org.h2.Driver',field.length='symbol:100')"+
+                "@PrimaryKey('symbol')@Index('volume')define table StockTable (symbol string, price float, volume long);"+
 
                 "from every ae1=edgeDeviceEventStream, ae2=edgeDeviceEventStream[ae1.ac != ac ] " +
                 "select ae2.ac as AC insert into acOutputStream; "+
 
                 "from every he1=edgeDeviceEventStream, he2=edgeDeviceEventStream[he1.humidity != humidity ] " +
                 "select he2.humidity as HUMIDITY insert into humidityOutputStream; "+
+
+                "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
+                "select te2.temperature as TEMP insert into temperatureOutputStream;"+
+
+                "from every we1=edgeDeviceEventStream, we2=edgeDeviceEventStream[we1.window != window ] " +
+                "select we2.window as WINDOW insert into windowOutputStream; "+
+
+                "from edgeDeviceEventStream[(1 == ac and 0 == window and 0 == light) and 0 == keycard] " +
+                "select 'AC is on' as alertMessage insert into alertStream; ";
+
+
                 /*"@info(name = 'acQuery') " +
 
                 "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
@@ -384,9 +413,20 @@ public class DeviceManagementService extends Service {
                 "from every ke1=edgeDeviceEventStream, ke2=edgeDeviceEventStream[ke1.keycard != keycard ] " +
                 "select 'keyCardStream' as name, ke2.keycard as value insert into keycardOutputStream;"+*/
 
-                "@info(name = 'alertQuery') " +
+
+
+                /*"@info(name = 'alertQuery') " +
                 "from edgeDeviceEventStream[(1 == ac or 1 == window or 1 == light) and 0 == keycard] " +
-                "select ac, window, light insert into alertOutputStream; ";
+                "select ac, window, light insert into alertOutputStream; ";*/
+
+
+
+
+
+
+
+
+
                 /*  "@info(name = 'temperatureQuery') " +
                 "from every te1=edgeDeviceEventStream, te2=edgeDeviceEventStream[te1.temperature != temperature ] " +
                 "select te2.temperature insert into temperatureOutputStream; "+*/
@@ -439,7 +479,7 @@ public class DeviceManagementService extends Service {
         startService(SiddhiService.class, siddhiConnection, extras);
 
         downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        runCacheManagementService();
+        //runCacheManagementService();
     }
 
     @Override
@@ -753,22 +793,6 @@ public class DeviceManagementService extends Service {
                     //mService.get().publishStats(publishTopic + "/ALERT", "operation", new Float ("1"));
                     mService.get().displayAlert((Float) data.getData(0) == 1, (Float) data.getData(1) == 1, (Float) data.getData(2) == 1);
                     break;
-                /*case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_TEMPERATURE_QUERY:
-                    mService.get().publishStats(publishTopic + "/TEMP", "TEMP", new Float(data.getData(0).toString()));
-                    break;
-                case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_HUMIDITY_QUERY:
-                    System.out.println("publishTopic : "+publishTopic);
-                    mService.get().publishStats(publishTopic + "/HUMIDITY", "HUMIDITY", (Float) data.getData(0));
-                    break;*/
-                case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_AC_QUERY:
-                    mService.get().publishStats(publishTopic + "/edgeData", "streamName", (String) data.getData(0),"streamValue",new Float(data.getData(1).toString()));
-                    break;
-              /*  case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_WINDOW_QUERY:
-                    mService.get().publishStats(publishTopic + "/WINDOW", "WINDOW", (Integer) data.getData(0));
-                    break;
-                case SiddhiService.MESSAGE_FROM_SIDDHI_SERVICE_KEYCARD_QUERY:
-                    mService.get().publishStats(publishTopic + "/DOOR", "DOOR", (Integer) data.getData(0));
-                    break;*/
             }
         }
     }

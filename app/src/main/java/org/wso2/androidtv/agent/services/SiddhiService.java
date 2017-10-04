@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
+import org.wso2.androidtv.agent.MessageActivity;
 import org.wso2.androidtv.agent.constants.TVConstants;
 import org.wso2.androidtv.agent.siddhiSources.TextEdgeSource;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
@@ -63,7 +64,7 @@ public class SiddhiService extends Service {
         }
         siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(executionPlan);
         siddhiAppRuntime.start();
-       siddhiAppRuntime.addCallback("alertQuery", new QueryCallback() {
+      /*  siddhiAppRuntime.addCallback("alertQuery", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 Log.d(TAG, "Event arrived on alertQuery");
@@ -73,64 +74,16 @@ public class SiddhiService extends Service {
                     }
                 }
             }
-        });
-   /*     siddhiAppRuntime.addCallback("temperatureQuery", new QueryCallback() {
-            @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                Log.d(TAG, "Event arrived on temperatureQuery");
-                if (mHandler != null) {
-                    for (Event e : inEvents) {
-                        mHandler.obtainMessage(MESSAGE_FROM_SIDDHI_SERVICE_TEMPERATURE_QUERY, e).sendToTarget();
-                    }
-                }
-            }
-        });
-        siddhiAppRuntime.addCallback("humidityQuery", new QueryCallback() {
-            @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                Log.d(TAG, "Event arrived on humidityQuery");
-                if (mHandler != null) {
-                    for (Event e : inEvents) {
-                        mHandler.obtainMessage(MESSAGE_FROM_SIDDHI_SERVICE_HUMIDITY_QUERY, e).sendToTarget();
-                    }
-                }
-            }
-        });
-       siddhiAppRuntime.addCallback("acQuery", new QueryCallback(){
-            @Override
-            public void receive(long l, Event[] events, Event[] events1) {
-                Log.d(TAG, "Event arrived on acQuery");
-                if (mHandler != null) {
-                    for (Event e : events) {
-                        mHandler.obtainMessage(MESSAGE_FROM_SIDDHI_SERVICE_AC_QUERY, e).sendToTarget();
-                    }
-                }
-            }
-
-
-        });
-        siddhiAppRuntime.addCallback("windowQuery", new QueryCallback() {
-            @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                Log.d(TAG, "Event arrived on windowQuery");
-                if (mHandler != null) {
-                    for (Event e : inEvents) {
-                        mHandler.obtainMessage(MESSAGE_FROM_SIDDHI_SERVICE_WINDOW_QUERY, e).sendToTarget();
-                    }
-                }
-            }
-        });
-        siddhiAppRuntime.addCallback("keycardQuery", new QueryCallback() {
-            @Override
-            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                Log.d(TAG, "Event arrived on keycardQuery");
-                if (mHandler != null) {
-                    for (Event e : inEvents) {
-                        mHandler.obtainMessage(MESSAGE_FROM_SIDDHI_SERVICE_KEYCARD_QUERY, e).sendToTarget();
-                    }
-                }
-            }
         });*/
+
+        siddhiAppRuntime.addCallback("alertStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                System.out.println("alertEvent :"+events[0].getData(0));
+                String alertMsg = events[0].getData(0).toString();
+                showAlert(MessageActivity.class, alertMsg);
+            }
+        });
 
         //Retrieving InputHandler to push events into Siddhi
         //setInputHandler(siddhiAppRuntime.getInputHandler("edgeDeviceEventStream"));
@@ -170,5 +123,12 @@ public class SiddhiService extends Service {
         SiddhiService getService() {
             return SiddhiService.this;
         }
+    }
+
+    private void showAlert(Class<?> cls, String extra) {
+        Intent intent = new Intent(this, cls);
+        intent.putExtra(TVConstants.MESSAGE, extra);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }

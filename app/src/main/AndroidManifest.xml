@@ -67,6 +67,9 @@
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
 
+
+
+
         <service
             android:name=".services.UsbService"
             android:enabled="true" />

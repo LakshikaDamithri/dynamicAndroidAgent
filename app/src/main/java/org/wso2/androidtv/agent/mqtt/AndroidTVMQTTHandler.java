@@ -18,6 +18,7 @@
 package org.wso2.androidtv.agent.mqtt;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -29,6 +30,8 @@ import org.wso2.androidtv.agent.mqtt.transport.MQTTTransportHandler;
 import org.wso2.androidtv.agent.mqtt.transport.TransportHandlerException;
 import org.wso2.androidtv.agent.util.AndroidTVClient;
 import org.wso2.androidtv.agent.util.LocalRegistry;
+
+import static android.support.v4.content.ContextCompat.startActivity;
 
 /**
  * This is an example for the use of the MQTT capabilities provided by the IoT-Server. This example depicts the use
@@ -100,6 +103,8 @@ public class AndroidTVMQTTHandler extends MQTTTransportHandler {
         Thread connectorThread = new Thread(connector);
         connectorThread.start();
     }
+
+
 
     /**
      * {@inheritDoc}
