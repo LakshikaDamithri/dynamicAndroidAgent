@@ -9,6 +9,7 @@ import android.util.Log;
 
 import org.wso2.androidtv.agent.MessageActivity;
 import org.wso2.androidtv.agent.constants.TVConstants;
+import org.wso2.androidtv.agent.h2cache.H2Connection;
 import org.wso2.androidtv.agent.siddhiSources.TextEdgeSource;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
@@ -16,6 +17,9 @@ import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 //import org.wso2.extension.siddhi.map.text.sourcemapper.TextSourceMapper;
 //import org.wso2.siddhi.extension.input.mapper.text.TextSourceMapper;
 
@@ -76,18 +80,29 @@ public class SiddhiService extends Service {
             }
         });*/
 
+
+        H2Connection h2Connection=new H2Connection(this);
         siddhiAppRuntime.addCallback("alertStream", new StreamCallback() {
             @Override
             public void receive(Event[] events) {
                 System.out.println("alertEvent :"+events[0].getData(0));
                 String alertMsg = events[0].getData(0).toString();
                 showAlert(MessageActivity.class, alertMsg);
+                try {
+                    h2Connection.checkIfTableExists();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+
+
             }
         });
 
         //Retrieving InputHandler to push events into Siddhi
         //setInputHandler(siddhiAppRuntime.getInputHandler("edgeDeviceEventStream"));
         Log.i(TAG, "Starting execution plan.");
+
     }
 
     @Override

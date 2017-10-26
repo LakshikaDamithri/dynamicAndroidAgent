@@ -51,9 +51,11 @@ import org.wso2.androidtv.agent.mqtt.AndroidTVMQTTHandler;
 import org.wso2.androidtv.agent.mqtt.MessageReceivedCallback;
 import org.wso2.androidtv.agent.cache.CacheEntry;
 import org.wso2.androidtv.agent.mqtt.transport.TransportHandlerException;
+import org.wso2.androidtv.agent.subscribers.EdgeSourceSubscriber;
 import org.wso2.androidtv.agent.util.AndroidTVUtils;
 import org.wso2.androidtv.agent.util.LocalRegistry;
 import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.stream.input.source.Source;
 import org.wso2.siddhi.core.stream.input.source.SourceEventListener;
 //import org.wso2.extension.siddhi.map.text.sourcemapper.TextSourceMapper;
 //import org.wso2.siddhi.extension.input.mapper.text.TextSourceMapper;
@@ -63,6 +65,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.URLDecoder;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
@@ -92,7 +95,9 @@ public class DeviceManagementService extends Service {
     private static volatile String incomingMessage = "";
     private static volatile String sendingMessage = "";
     private static volatile boolean isCacheEnabled = false;
-    private static volatile SourceEventListener sourceEventListener;
+    //private static volatile SourceEventListener sourceEventListener;
+   // private static ArrayList<Source> sources = new ArrayList<>();
+    private static ArrayList<EdgeSourceSubscriber> sourceSubscribers = new ArrayList<>();
 
     private DownloadManager downloadManager;
 
@@ -263,6 +268,10 @@ public class DeviceManagementService extends Service {
 
     @Override
     public void onCreate() {
+
+
+
+
        androidTVMQTTHandler = new AndroidTVMQTTHandler(this, new MessageReceivedCallback() {
             @Override
             public void onMessageReceived(JSONObject message) throws JSONException {
@@ -381,8 +390,9 @@ public class DeviceManagementService extends Service {
 
                 "@config(async = 'true') define stream alertStream (alertMessage String);"+
 
-                "@Store(type='rdbms', jdbc.url='jdbc:h2:/data/data/agent.androidtv.wso2.org.agent2/data/edgeTVGateway;FILE_LOCK=FS;PAGE_SIZE=1024;CACHE_SIZE=8192', username='admin', password='admin' , jdbc.driver.name='org.h2.Driver',field.length='symbol:100')"+
-                "@PrimaryKey('symbol')@Index('volume')define table StockTable (symbol string, price float, volume long);"+
+                "@Store(type='rdbms', jdbc.url='jdbc:h2:/data/data/agent.androidtv.wso2.org.agent2/data/edgeTVGateway;FILE_LOCK=FS;PAGE_SIZE=1024;CACHE_SIZE=8192', username='admin', password='admin' , jdbc.driver.name='org.h2.Driver')"+
+                "define table actable (AC float);"+
+
 
                 "from every ae1=edgeDeviceEventStream, ae2=edgeDeviceEventStream[ae1.ac != ac ] " +
                 "select ae2.ac as AC insert into acOutputStream; "+
@@ -395,6 +405,9 @@ public class DeviceManagementService extends Service {
 
                 "from every we1=edgeDeviceEventStream, we2=edgeDeviceEventStream[we1.window != window ] " +
                 "select we2.window as WINDOW insert into windowOutputStream; "+
+
+                "from every aet1=edgeDeviceEventStream, aet2=edgeDeviceEventStream[aet1.ac != ac ] " +
+                "select aet2.ac as AC insert into actable; "+
 
                 "from edgeDeviceEventStream[(1 == ac and 0 == window and 0 == light) and 0 == keycard] " +
                 "select 'AC is on' as alertMessage insert into alertStream; ";
@@ -623,8 +636,10 @@ public class DeviceManagementService extends Service {
                         int light = payload.getInt("l");
                         int keyCard = payload.getInt("k");*/
                         //siddhiService.getInputHandler().send(new Object[]{ac, window, light, temp, humidity, keyCard});
-
-                        sourceEventListener.onEvent(message, null);
+                        for(EdgeSourceSubscriber sourceSubscriber:sourceSubscribers) {
+                            //sourceEventListener.onEvent(message, null);
+                            sourceSubscriber.recieveEvent(message,null);
+                        }
                         break;
                 }
             } catch (JSONException e) {
@@ -856,12 +871,13 @@ public class DeviceManagementService extends Service {
     }
 
 
-    public static void connectToSource(SourceEventListener srcEvntListner) {
-        sourceEventListener = srcEvntListner;
+    public static void connectToSource(EdgeSourceSubscriber sourceSubscriber) {
+        sourceSubscribers.add(sourceSubscriber);
+        //sourceEventListener = srcEvntListner;
     }
 
-    public static void disConnectToSource() {
-        sourceEventListener = null;
+    public static void disConnectToSource(EdgeSourceSubscriber sourceSubscriber) {
+        sourceSubscribers.remove(sourceSubscriber);
     }
 
     public static AndroidTVMQTTHandler getAndroidTVMQTTHandler(){
