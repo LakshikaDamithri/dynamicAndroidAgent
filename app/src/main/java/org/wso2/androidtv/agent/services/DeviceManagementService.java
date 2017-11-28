@@ -352,6 +352,9 @@ public class DeviceManagementService extends Service {
                 "define stream edgeDeviceEventStream " +
                 "(ac Float, window float, light float, temperature float, humidity float, keycard float); " +
 
+                "@source(type='textEdge', @map(type='text', fail.on.missing.attribute = 'true', regex"+ ".L=(LON), @attributes(light = 'L') ))" +
+                "define stream EventStream1 " +
+                "(light string);"+
 
                 /*"@sink(type='mqtt', url="+ "'"+LocalRegistry.getMqttEndpointSiddhi()+"'"+"," +
                 "topic="+"'carbon.super/androidtv234/00000000-1209-8a12-0033-c5870033c587/AC',username="+"'"+LocalRegistry.getAccessTokenSidhhi()+"'"+"," +
@@ -389,9 +392,6 @@ public class DeviceManagementService extends Service {
                 "@sink(type='edgeGateway',topic='carbon.super/androidtv/00000000-1209-8a12-0033-c5870033c587/WINDOW',@map(type='json'))"+"define stream windowOutputStream (WINDOW Float);"+
 
                 "@config(async = 'true') define stream alertStream (alertMessage String);"+
-
-                "@Store(type='rdbms', jdbc.url='jdbc:h2:/data/data/agent.androidtv.wso2.org.agent2/data/edgeTVGateway;FILE_LOCK=FS;PAGE_SIZE=1024;CACHE_SIZE=8192', username='admin', password='admin' , jdbc.driver.name='org.h2.Driver')"+
-                "define table actable (AC float);"+
 
 
                 "from every ae1=edgeDeviceEventStream, ae2=edgeDeviceEventStream[ae1.ac != ac ] " +
